@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
+#include <iostream>
 
 using TokenType = std::string;
 
@@ -15,9 +16,23 @@ extern TokenType EOF_TOKEN;
 
 extern TokenType IDENT;
 extern TokenType INT;
+extern TokenType TRUE;
+extern TokenType FALSE;
+extern TokenType IF;
+extern TokenType ELSE;
+extern TokenType RETURN;
 
 extern TokenType ASSIGN;
 extern TokenType PLUS;
+extern TokenType MINUS;
+extern TokenType SLASH;
+extern TokenType ASTERISK;
+extern TokenType BANG;
+extern TokenType EQ;
+extern TokenType NOT_EQ;
+
+extern TokenType LT;
+extern TokenType GT;
 
 extern TokenType COMMA;
 extern TokenType SEMICOLON;
@@ -32,5 +47,7 @@ extern TokenType LET;
 
 extern const std::map<std::string, TokenType> keywords;
 
-Token newToken(TokenType& type, char& ch);
+Token newToken(const TokenType& type, const char& ch);
+Token newToken(const TokenType& type, const std::string& str);
 TokenType lookupIdent(std::string& ident);
+std::ostream& operator<<(std::ostream& os, const Token& tok);

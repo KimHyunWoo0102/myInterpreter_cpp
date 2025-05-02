@@ -13,6 +13,7 @@ public:
 	void skipWhitespace();
 	
 	Token nextToken();
+	char peekChar();
 	std::string readIdentifier();
 	std::string readNumber();
 private:

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClInclude Include="Token.h" />
     <ClInclude Include="CLexer.h" />
+    <ClInclude Include="CRepl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp" />
@@ -11,6 +12,7 @@
     </ClCompile>
     <ClCompile Include="CLexer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="CRepl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="testing">

@@ -44,7 +44,22 @@ Token CLexer::nextToken()
 
 	switch (this->_ch) {
 	case '=':
-		tok = newToken(ASSIGN, this->_ch);
+		if (this->peekChar() == '=') {
+			tok = newToken(EQ, std::string("=="));
+			this->readChar();
+		}
+		else {
+			tok = newToken(ASSIGN, this->_ch);
+		}
+		break;
+	case '!':
+		if (this->peekChar() == '=') {
+			tok = newToken(NOT_EQ, std::string("!="));
+			this->readChar();
+		}
+		else {
+			tok = newToken(BANG, this->_ch);
+		}
 		break;
 	case ';':
 		tok = newToken(SEMICOLON, this->_ch);
@@ -60,6 +75,21 @@ Token CLexer::nextToken()
 		break;	
 	case '+':
 		tok = newToken(PLUS, this->_ch);
+		break;
+	case '-':
+		tok = newToken(MINUS, this->_ch);
+		break;
+	case '/':
+		tok = newToken(SLASH, this->_ch);
+		break;
+	case '*':
+		tok = newToken(ASTERISK, this->_ch);
+		break;
+	case '<':
+		tok = newToken(LT, this->_ch);
+		break;
+	case '>':
+		tok = newToken(GT, this->_ch);
 		break;
 	case '{':
 		tok = newToken(LBRACE, this->_ch);
@@ -90,6 +120,16 @@ Token CLexer::nextToken()
 	}
 	this->readChar();
 	return tok;
+}
+
+char CLexer::peekChar()
+{
+	if (this->_read_position >= this->_input.length()) {
+		return 0;
+	}
+	else {
+		return this->_input[this->_read_position];
+	}
 }
 
 std::string CLexer::readIdentifier()

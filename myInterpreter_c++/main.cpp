@@ -1,6 +1,9 @@
-//#include"lexer_test.h"
-//
-//int main() {
-//	lexer_test();
-//	return 0;
-//}
+#include "CRepl.h"
+
+int main() {
+	std::cout << "Hello! This is the Monkey Programming Language!" << std::endl;
+	std::cout << "Feel Free to type in commands" << std::endl;
+	CRepl repl;
+	repl.Start(std::cout, std::cin);
+	return 0;
+}
