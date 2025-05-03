@@ -2,6 +2,7 @@
 #include <iostream>
 void CRepl::Start(std::ostream& os, std::istream& is)
 {
+	//getline으로 한줄 읽어와 원하는 outstream으로 출력함.
 	std::string line;
 	
 	while (true) {

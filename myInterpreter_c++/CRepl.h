@@ -1,7 +1,10 @@
 #pragma once
 #include "CLexer.h"
 
-
+/*
+	CPerl is a simple REPL (Read-Eval-Print Loop) interpreter for a custom language.
+	It reads input from the user, tokenizes it with CLexer, and prints the tokens to the output stream.
+*/
 class CRepl
 {
 public:

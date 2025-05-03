@@ -4,15 +4,22 @@
     <ClInclude Include="Token.h" />
     <ClInclude Include="CLexer.h" />
     <ClInclude Include="CRepl.h" />
+    <ClInclude Include="CParser.h" />
+    <ClInclude Include="CAst.h" />
+    <ClInclude Include="test.h">
+      <Filter>testing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp" />
-    <ClCompile Include="lexer_test.cpp">
+    <ClCompile Include="test.cpp">
       <Filter>testing</Filter>
     </ClCompile>
     <ClCompile Include="CLexer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CRepl.cpp" />
+    <ClCompile Include="CParser.cpp" />
+    <ClCompile Include="CAst.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="testing">

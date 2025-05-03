@@ -1,5 +1,6 @@
-#include "CLexer.h"
-#include<iostream>
+#include "test.h"
+#include "CParser.h"
+
 
 void lexerTestVer1()
 {
@@ -207,10 +208,71 @@ void lexerTestVer3() {
 	std::cout << "All tests passed!" << std::endl;
 
 }
-//int main() {
-//	//lexerTestVer1();
-//	//lexerTestVer2();
-//	lexerTestVer3();
-//
-//	return 0;
-//}
+
+void TestLetStatement()
+{
+	const std::string input=
+		"let x  5;"
+		"let  = 10;"
+		"let 838383;";
+
+	CLexer lexer(input);
+	CParser parser(lexer);
+
+	std::unique_ptr<Program> program = parser.parseProgram();
+	checkParserErrors(parser);
+	if (program == nullptr) {
+		std::cout << "ParseProgram() returned nullptr" << std::endl;
+		return;
+	}
+
+	if (program->getStatementsSize() != 3) {
+		std::cout << "program.Statements does not contain 3 statements. got=" << program->getStatementsSize() << std::endl;
+		return;
+	}
+
+	const std::string expectedIdentifier[]=
+	{ "x","y", "foobar" };
+
+	
+	for (int i = 0; i < program->getStatementsSize(); i++) {
+		const Statement *stmt = program->getStatement(i);
+		if(!testLetStatement(stmt,expectedIdentifier[i]))return;
+	}
+}
+
+bool testLetStatement(const Statement* stmt, const std::string& name) {
+	if (stmt->getTokenLiteral() != "let") {
+		std::cout << "stmt.TokenLiteral not 'let'. got=" << stmt->getTokenLiteral() <<" instead" << std::endl;
+		return false;
+	}
+
+	const LetStatement* letStmt = dynamic_cast<const LetStatement*>(stmt);
+	if (letStmt == nullptr) {
+		std::cout << "stmt is not LetStatement. got=" << typeid(stmt).name() << " instead" << std::endl;
+		return false;
+	}
+	if (letStmt->getName()->getValue()!=name) {
+		std::cout << "letStmt.Name.Value not "<<name<<". got = "<<letStmt->getName()->getValue() << " instead" << std::endl;
+		return false;
+	}
+
+	if (letStmt->getName()->getTokenLiteral() != name) {
+		std::cout << "letStmt.Name.TokenLiteral not " << name << ". got=" << letStmt->getName()->getTokenLiteral() << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+void checkParserErrors(CParser& parser)
+{
+	const std::vector<std::string>& errors = parser.Errors();
+	if (errors.empty()) {
+		return;
+	}
+	std::cout << "parser has " << errors.size() << " errors:" << std::endl;
+	for (const auto& error : errors) {
+		std::cout << "\t" << error << std::endl;
+	}
+}

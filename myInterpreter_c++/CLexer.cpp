@@ -38,6 +38,7 @@ void CLexer::skipWhitespace()
 
 Token CLexer::nextToken()
 {
+	//다음 토큰을 읽어오는 함수
 	Token tok;
 
 	this->skipWhitespace();
@@ -103,6 +104,7 @@ Token CLexer::nextToken()
 		break;
 
 	default:
+		//문자열인지 숫자인지 조사후 알맞는 토큰 리턴
 		if (isLetter(this->_ch)) {
 			tok._literal = this->readIdentifier();
 			tok._type = lookupIdent(tok._literal);
