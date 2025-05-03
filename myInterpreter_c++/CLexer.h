@@ -1,10 +1,11 @@
 #pragma once
-#include"Token.h"
-
 /*
 	CLexer is a simple lexical analyzer for a custom language.
 	It reads input from a string, tokenizes it, and provides methods to access the tokens.
 */
+#include <string>
+#include <cctype>      // isdigit ÇÔ¼ö
+#include "Token.h"
 class CLexer
 {
 public:

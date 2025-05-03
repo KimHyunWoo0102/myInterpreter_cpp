@@ -7,6 +7,8 @@ int main() {
 	CRepl repl;
 	repl.Start(std::cout, std::cin);*/
 
-	TestLetStatement();
+	//TestLetStatement();
+	//TestReturnStatement();
+	TestAstString();
 	return 0;
 }

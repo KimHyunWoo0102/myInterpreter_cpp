@@ -1,14 +1,22 @@
 #pragma once
+
+#include <string>
+#include <vector>
+#include <memory>
+
+#include "Token.h"
+#include "CLexer.h"
+#include "CAst.h"
 /*
 	CParser는 Monkey Language의 구문 분석기를 나타냅니다.
 	이 클래스는 CLexer를 사용하여 토큰을 읽고, 구문 트리를 생성하는 기능을 제공합니다.
 
 	Let Statement:
 			let <identifier> = <expression>;
+	Return Statement:
+			return <expression>;
 
 */
-#include "CLexer.h"
-#include "CAst.h"
 
 class CParser
 {
@@ -20,12 +28,13 @@ public:
 	std::unique_ptr<Program> parseProgram();
 	std::unique_ptr<Statement> parseStatement();
 	std::unique_ptr<LetStatement> parseLetProgram();
+	std::unique_ptr<ReturnStatement> parseReturnStatement();
 
 	bool curTokenIs(const TokenType& type) const {
-		return this->_cur_token._type == type;
+		return _cur_token._type == type;
 	}
 	bool peekTokenIs(const TokenType& type) const {
-		return this->_peek_token._type == type;
+		return _peek_token._type == type;
 	}
 	bool expectPeek(const TokenType& type);
 

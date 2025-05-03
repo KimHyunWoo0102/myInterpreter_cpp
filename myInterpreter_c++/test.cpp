@@ -1,6 +1,5 @@
 #include "test.h"
-#include "CParser.h"
-
+#include "Token.h"
 
 void lexerTestVer1()
 {
@@ -263,6 +262,60 @@ bool testLetStatement(const Statement* stmt, const std::string& name) {
 	}
 
 	return true;
+}
+
+void TestReturnStatement()
+{
+	const std::string input=
+		"return 5;"
+		"return 10;"
+		"return 993322;";
+	CLexer lexer(input);
+	CParser parser(lexer);
+	std::unique_ptr<Program> program = parser.parseProgram();
+	checkParserErrors(parser);
+
+	if (program->getStatementsSize() != 3) {
+		std::cout << "program.Statements does not contain 3 statements. got=" << program->getStatementsSize() << std::endl;
+		return;
+	}
+
+	for (int i = 0; i < program->getStatementsSize(); i++) {
+		const Statement* stmt = program->getStatement(i);
+		if (stmt->getTokenLiteral() != "return") {
+			std::cout << "stmt.TokenLiteral not 'return'. got=" << stmt->getTokenLiteral() << std::endl;
+			return;
+		}
+		const ReturnStatement* returnStmt = dynamic_cast<const ReturnStatement*>(stmt);
+		if (returnStmt == nullptr) {
+			std::cout << "stmt is not ReturnStatement. got=" << typeid(stmt).name() << std::endl;
+			return;
+		}
+	}
+}
+
+void TestAstString()
+{
+	// 토큰 준비
+	Token letToken=newToken(LET, "let");
+	Token identToken=newToken(IDENT, "myVar");
+	Token valueToken=newToken(IDENT, "anotherVar");
+
+	// Identifier 객체들
+	auto name = std::make_unique<Identifier>(identToken, "myVar");
+	auto value = std::make_unique<Identifier>(valueToken, "anotherVar");
+
+	// LetStatement 생성
+	auto letStmt = std::make_unique<LetStatement>(letToken);
+	letStmt->setName(std::move(name));
+	letStmt->setValue(std::move(value));
+
+	// Program 객체에 추가
+	Program program;
+	program.addStatement(std::move(letStmt));
+
+	// AST 문자열 출력
+	std::cout << program.String() <<std::endl;
 }
 
 void checkParserErrors(CParser& parser)

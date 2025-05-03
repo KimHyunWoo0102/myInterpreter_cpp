@@ -1,36 +1,43 @@
-#pragma once
+ï»¿#pragma once
+
 #include <string>
 #include <vector>
 #include <memory>
-#include "Token.h"
+#include <cstddef>  // for size_t (optional)
 
-// Node ÀÎÅÍÆäÀÌ½º
+// Tokenì„ ì •ì˜í•œ í—¤ë”
+#include "Token.h"
+// Node ì¸í„°í˜ì´ìŠ¤
 class Node {
 public:
 	Node() = default;
-	explicit Node(const Token& token) : _token(token) {}
+	Node(const Token& token) : _token(token) {}
 	virtual ~Node() = default;
 
 	virtual std::string getTokenLiteral() const { return _token._literal; }
-
+	virtual std::string String() const{ return ""; }
 protected:
 	Token _token;
 };
 
-// Statement ÀÎÅÍÆäÀÌ½º
+// Statement ì¸í„°í˜ì´ìŠ¤
 class Statement : public Node {
 public:
 	Statement() = default;
-	explicit Statement(const Token& token) : Node(token) {}
+	Statement(const Token& token) : Node(token) {}
 	virtual ~Statement() = default;
 
 	virtual std::string getStatementNode() = 0;
 };
 
-// Program Å¬·¡½º
+// Program í´ë˜ìŠ¤
 class Program : public Node {
 public:
 	Program() = default;
+	Program(const Token& token) : Node(token) {}
+	Program(std::vector<std::unique_ptr<Statement>>&& stmts) {
+		_statements = std::move(stmts);
+	}
 	virtual ~Program() = default;
 
 	virtual std::string getTokenLiteral() const override;
@@ -38,6 +45,7 @@ public:
 	size_t getStatementsSize() const {
 		return _statements.size();
 	}
+	std::string String() const override;
 
 	const Statement* getStatement(size_t index) const {
 		if (index >= _statements.size()) return nullptr;
@@ -52,17 +60,16 @@ private:
 	std::vector<std::unique_ptr<Statement>> _statements;
 };
 
-// Expression ÀÎÅÍÆäÀÌ½º
+// Expression ì¸í„°í˜ì´ìŠ¤
 class Expression : public Node {
 public:
 	Expression() = default;
-	explicit Expression(const Token& token) : Node(token) {}
+	Expression(const Token& token) : Node(token) {}
 	virtual ~Expression() = default;
-
 	virtual std::string getExpressionNode() = 0;
 };
 
-// Identifier Å¬·¡½º
+// Identifier í´ë˜ìŠ¤
 class Identifier : public Expression {
 public:
 	Identifier() = default;
@@ -71,7 +78,9 @@ public:
 	}
 
 	virtual ~Identifier() = default;
-
+	std::string String() const override {
+		return _value;
+	}
 	virtual std::string getExpressionNode() override { return "Identifier"; }
 
 	const std::string& getValue() const {
@@ -82,15 +91,16 @@ private:
 	std::string _value;
 };
 
-// LetStatement Å¬·¡½º
+// LetStatement í´ë˜ìŠ¤
 class LetStatement : public Statement {
 public:
 	LetStatement() = default;
-	explicit LetStatement(const Token& token) : Statement(token) {}
+	LetStatement(const Token& token) : Statement(token) {}
 	virtual ~LetStatement() = default;
 
+	std::string String() const override;
 	virtual std::string getStatementNode() override { return "LetStatement"; }
-
+	
 	const Identifier* getName() const { return _name.get(); }
 	const Expression* getValue() const { return _value.get(); }
 
@@ -105,4 +115,41 @@ public:
 private:
 	std::unique_ptr<Identifier> _name;
 	std::unique_ptr<Expression> _value;
+};
+
+class ReturnStatement : public Statement {
+public:
+	ReturnStatement() = default;
+	ReturnStatement(const Token& token) : Statement(token) {}
+	virtual ~ReturnStatement() = default;
+
+	std::string String() const override;
+	virtual std::string getStatementNode() override { return "ReturnStatement"; }
+	const Expression* getReturnValue() const { return _return_value.get(); }
+	void setReturnValue(std::unique_ptr<Expression> return_value) {
+		_return_value = std::move(return_value);
+	}
+
+private:
+	std::unique_ptr<Expression> _return_value;
+};
+
+// ExpressionStatement í´ë˜ìŠ¤
+class ExpressionStatement : public Statement {
+public:
+	ExpressionStatement() = default;
+	ExpressionStatement(const Token& token) : Statement(token) {}
+	virtual ~ExpressionStatement() = default;
+	
+	std::string String() const override;
+	virtual std::string getStatementNode() override { return "ExpressionStatement"; }
+
+	const Expression* getExpression() const { return _expression.get(); }
+	void setExpression(std::unique_ptr<Expression> expression) {
+		_expression = std::move(expression);
+	}
+
+
+private:
+	std::unique_ptr<Expression> _expression;
 };

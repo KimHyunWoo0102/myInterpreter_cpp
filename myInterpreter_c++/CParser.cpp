@@ -1,5 +1,6 @@
 #include "CParser.h"
-#include <memory>
+#include "CAst.h"
+#include "CLexer.h"
 
 CParser::CParser(CLexer& lexer)
 	:_lexer(lexer)
@@ -33,6 +34,9 @@ std::unique_ptr<Statement> CParser::parseStatement()
 	if (this->_cur_token._type == LET) {
 		return parseLetProgram();
 	}
+	else if (this->_cur_token._type == RETURN) {
+		return parseReturnStatement();
+	}
 	return nullptr;
 }
 
@@ -50,6 +54,16 @@ std::unique_ptr<LetStatement> CParser::parseLetProgram()
 		this->nextToken();//세미콜론 나올때까지 건너뜀
 
 	return let_stmt;
+}
+
+std::unique_ptr<ReturnStatement> CParser::parseReturnStatement()
+{
+	std::unique_ptr<ReturnStatement> return_stmt = std::make_unique<ReturnStatement>(this->_cur_token);
+	this->nextToken();
+
+	while (!this->curTokenIs(SEMICOLON))this->nextToken();
+	
+	return return_stmt;
 }
 
 bool CParser::expectPeek(const TokenType& type)

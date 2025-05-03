@@ -1,4 +1,5 @@
 #include "CLexer.h"
+#include"Token.h"
 
 CLexer::CLexer(const std::string& input)
 	:_input(input), _position(0), _read_position(1), _ch(input[0])

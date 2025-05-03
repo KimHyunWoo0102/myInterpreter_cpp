@@ -11,4 +11,6 @@ void lexerTestVer3();
 void TestLetStatement();
 bool testLetStatement(const Statement* stmt, const std::string& name);
 
+void TestReturnStatement();
+void TestAstString();
 void checkParserErrors(CParser& parser);
