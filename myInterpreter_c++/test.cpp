@@ -318,6 +318,43 @@ void TestAstString()
 	std::cout << program.String() <<std::endl;
 }
 
+void TestIdentifierExpression() {
+	const std::string input = "foobar;";
+	CLexer lexer(input);
+	CParser parser(lexer);
+	std::unique_ptr<Program> program = parser.parseProgram();
+	checkParserErrors(parser);
+
+	if (program->getStatementsSize() != 1) {
+		std::cout << "program.Statements does not contain 1 statement. got=" << program->getStatementsSize() << std::endl;
+		return;
+	}
+
+   const ExpressionStatement* stmt = dynamic_cast<const ExpressionStatement*>(program->getStatement(0));
+   if (stmt == nullptr) {
+	   std::cout << "program.Statements[0] is not ExpressionStatement. got=" << typeid(program->getStatement(0)).name() << std::endl;
+	   return;
+   }
+
+   const Identifier* ident = dynamic_cast<const Identifier*>(stmt->getExpression());
+   if (ident == nullptr) {
+	   std::cout << "stmt.Expression is not Identifier. got=" << typeid(stmt->getExpression()).name() << std::endl;
+	   return;
+   }
+
+   if (ident->getValue() != "foobar") {
+	   std::cout << "ident.Value not foobar. got=" << ident->getValue() << std::endl;
+	   return;
+   }
+
+   if (ident->getTokenLiteral() != "foobar") {
+	   std::cout << "ident.TokenLiteral not foobar. got=" << ident->getTokenLiteral() << std::endl;
+	   return;
+   }
+
+   std::cout << "TestIdentifierExpression passed!" <<std:: endl;
+}
+
 void checkParserErrors(CParser& parser)
 {
 	const std::vector<std::string>& errors = parser.Errors();

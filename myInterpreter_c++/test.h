@@ -13,4 +13,6 @@ bool testLetStatement(const Statement* stmt, const std::string& name);
 
 void TestReturnStatement();
 void TestAstString();
+
+void TestIdentifierExpression();
 void checkParserErrors(CParser& parser);

@@ -7,6 +7,8 @@ CParser::CParser(CLexer& lexer)
 {
 	this->nextToken();
 	this->nextToken();
+
+	this->registerPrefix(IDENT, std::bind(&CParser::parseIdentifier, this));
 }
 
 void CParser::nextToken()
@@ -31,13 +33,12 @@ std::unique_ptr<Program> CParser::parseProgram()
 
 std::unique_ptr<Statement> CParser::parseStatement()
 {
-	if (this->_cur_token._type == LET) {
+	if (this->_cur_token._type == LET) 
 		return parseLetProgram();
-	}
-	else if (this->_cur_token._type == RETURN) {
+	else if (this->_cur_token._type == RETURN) 
 		return parseReturnStatement();
-	}
-	return nullptr;
+	else
+		return parseExpressionStatement();
 }
 
 std::unique_ptr<LetStatement> CParser::parseLetProgram()
@@ -64,6 +65,32 @@ std::unique_ptr<ReturnStatement> CParser::parseReturnStatement()
 	while (!this->curTokenIs(SEMICOLON))this->nextToken();
 	
 	return return_stmt;
+}
+
+std::unique_ptr<ExpressionStatement> CParser::parseExpressionStatement()
+{
+	std::unique_ptr<ExpressionStatement> expr_stmt = std::make_unique<ExpressionStatement>(this->_cur_token);
+	expr_stmt->setExpression(this->parseExpression(Precedence::LOWEST));
+
+	if (this->peekTokenIs(SEMICOLON))
+		this->nextToken();
+	return expr_stmt;
+}
+
+std::unique_ptr<Expression> CParser::parseIdentifier()
+{
+	return std::make_unique<Identifier>(this->_cur_token, this->_cur_token._literal);
+}
+
+std::unique_ptr<Expression> CParser::parseExpression(CParser::Precedence precedence)
+{
+	auto prefix = this->_prefix_parse_fns.find(this->_cur_token._type);
+
+	if (prefix == this->_prefix_parse_fns.end()) {
+		return nullptr;
+	}
+	std::unique_ptr<Expression> left_expr = prefix->second();
+	return left_expr;
 }
 
 bool CParser::expectPeek(const TokenType& type)

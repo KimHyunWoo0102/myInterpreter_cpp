@@ -9,6 +9,8 @@ int main() {
 
 	//TestLetStatement();
 	//TestReturnStatement();
-	TestAstString();
+	//TestAstString();
+	TestIdentifierExpression();
+
 	return 0;
 }
