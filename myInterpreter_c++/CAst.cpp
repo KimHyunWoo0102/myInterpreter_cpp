@@ -54,3 +54,27 @@ std::string ExpressionStatement::String() const
 	}
 	return "";
 }
+
+std::string PrefixExpression::String() const
+{
+	std::string out = "";
+
+	out += "(";
+	out += this->getOperator();
+	out += this->getRight()->String();
+	out += ")";
+
+	return out;
+}
+
+std::string InfixExpression::String() const
+{
+	std::string out;
+	out += "(";
+	out += this->getLeft()->String();
+	out += " " + this->getOperator() + " ";
+	out += this->getRight()->String();
+	out += ")";
+
+	return out;
+}

@@ -10,7 +10,10 @@ int main() {
 	//TestLetStatement();
 	//TestReturnStatement();
 	//TestAstString();
-	TestIdentifierExpression();
+	//TestIdentifierExpression();
+	//TestIntegerLiteralExpression();
 
+	//TestParsingPrefixExpression();
+	TestParsingInfixExpressions();
 	return 0;
 }

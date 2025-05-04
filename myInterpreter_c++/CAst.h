@@ -91,6 +91,80 @@ private:
 	std::string _value;
 };
 
+class IntegerLiteral : public Expression {
+public:
+	IntegerLiteral() = default;
+	IntegerLiteral(const Token& token)
+		: Expression(token), _value(0) {
+	}
+	/*IntegerLiteral(const Token& token, const std::string& value)
+		: Expression(token), _value(0) {
+		_value = std::stoll(value);
+	}*/
+	IntegerLiteral(const Token& token, const int64_t value)
+		: Expression(token), _value(value) {
+	}
+	virtual ~IntegerLiteral() = default;
+
+	std::string String() const override {
+		return _token._literal;
+	}
+	virtual std::string getExpressionNode() override { return "IntegerLiteral"; }
+	const int64_t& getValue() const {
+		return _value;
+	}
+	void setValue(int64_t value) {
+		_value = value;
+	}
+private:
+	int64_t _value;
+};
+
+class PrefixExpression : public Expression {
+public:
+	PrefixExpression() = default;
+	PrefixExpression(Token token):Expression(token){}
+	PrefixExpression(Token token, std::string& op)
+		:Expression(token), _operator(op) {}
+	~PrefixExpression() = default;
+
+	const std::string& getOperator() const{ return _operator; }
+	const Expression* getRight() const{ return _right.get(); }
+
+	void setOperator(std::string& op) { _operator = op; }
+	void setRight(std::unique_ptr<Expression> right) { _right = std::move(right); }
+
+	virtual std::string getExpressionNode()override { return "PrefixExpression"; }
+	virtual std::string String() const override;
+
+private:
+	std::string _operator;
+	std::unique_ptr<Expression>_right;
+};
+
+class InfixExpression :public Expression {
+public:
+	InfixExpression() = default;
+	InfixExpression(Token token):Expression(token){}
+	InfixExpression(Token token, std::string& op)
+		:Expression(token), _operator(op) {}
+	~InfixExpression() = default;
+
+	const std::string& getOperator()const { return _operator; }
+	const Expression* getLeft()const { return _left.get(); }
+	const Expression* getRight()const { return _right.get(); }
+
+	void setOperator(std::string& op) { _operator = op; }
+	void setLeft(std::unique_ptr<Expression> left) { _right = std::move(left); }
+	void setRight(std::unique_ptr<Expression> right) { _right = std::move(right); }
+
+	virtual std::string getExpressionNode()override { return "PrefixExpression"; }
+	virtual std::string String() const override;
+private:
+	std::unique_ptr<Expression> _left;
+	std::string _operator;
+	std::unique_ptr<Expression>_right;
+};
 // LetStatement 클래스
 class LetStatement : public Statement {
 public:
@@ -129,7 +203,6 @@ public:
 	void setReturnValue(std::unique_ptr<Expression> return_value) {
 		_return_value = std::move(return_value);
 	}
-
 private:
 	std::unique_ptr<Expression> _return_value;
 };
@@ -148,8 +221,6 @@ public:
 	void setExpression(std::unique_ptr<Expression> expression) {
 		_expression = std::move(expression);
 	}
-
-
 private:
 	std::unique_ptr<Expression> _expression;
 };

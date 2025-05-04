@@ -47,6 +47,10 @@ public:
 	std::unique_ptr<ExpressionStatement> parseExpressionStatement();
 	std::unique_ptr<Expression> parseIdentifier();
 	std::unique_ptr<Expression> parseExpression(CParser::Precedence precedence);
+	std::unique_ptr<Expression> parseIntegerLiteral();
+	std::unique_ptr<Expression> parsePrefixExpression();
+
+	void noPrefixParseFnError(const TokenType &token);
 	bool curTokenIs(const TokenType& type) const {
 		return _cur_token._type == type;
 	}

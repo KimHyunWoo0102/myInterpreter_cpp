@@ -355,6 +355,175 @@ void TestIdentifierExpression() {
    std::cout << "TestIdentifierExpression passed!" <<std:: endl;
 }
 
+void TestIntegerLiteralExpression()
+{
+	const std::string input = "5;";
+
+	CLexer lexer(input);
+	CParser parser(lexer);
+	std::unique_ptr<Program> program = parser.parseProgram();
+	checkParserErrors(parser);
+
+	if (program->getStatementsSize() != 1) {
+		std::cout << "program.Statements does not contain 1 statement. got=" << program->getStatementsSize() << std::endl;
+		return;
+	}
+
+	auto stmt = dynamic_cast<const ExpressionStatement*>(program->getStatement(0));
+	if (stmt == nullptr) {
+		std::cout << "program.Statements[0] is not ExpressionStatement. got=" << typeid(program->getStatement(0)).name() << std::endl;
+		return;
+	}
+	auto expr = stmt->getExpression();  // Expression* ¸¦ ¹Þ¾Æ¿È
+	auto literal = dynamic_cast<const IntegerLiteral*>(expr);
+	if (literal == nullptr) {
+		std::cout << "stmt.Expression is not IntegerLiteral. got= <nullPtr>"<< std::endl;
+		return;
+	}
+	if (literal->getValue() != 5) {
+		std::cout << "literal.Value not 5. got=" << literal->getValue() << std::endl;
+		return;
+	}
+	if (literal->getTokenLiteral() != "5") {
+		std::cout << "literal.TokenLiteral not 5. got=" << literal->getTokenLiteral() << std::endl;
+		return;
+	}
+	std::cout << "TestIntegerLiteralExpression passed!" << std::endl;
+}
+
+bool testIntegerLiteral(const Expression* il_expr, int64_t value) {
+	auto integ = dynamic_cast<const IntegerLiteral*>(il_expr);
+
+	if (integ == nullptr)
+	{
+		std::cout << "il not IntegerLiteral. got = " << typeid(integ).name() << std::endl;
+		return false;
+	}
+
+	if (integ->getValue() != value) {
+		std::cout << "integ.Value not " << value << ". got = " << integ->getValue() << std::endl;
+		return false;
+	}
+
+	if (integ->getTokenLiteral() != std::to_string(value)) {
+		std::cout << "integ.TokenLiteral not " << value << ". got = " << integ->getTokenLiteral() << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+void TestParsingPrefixExpression() {
+	struct TestCase {
+		std::string input;
+		std::string expected_operator;
+		int64_t expected_value;
+	};
+
+	TestCase test_cases[] = {
+		{"!5;", "!", 5},
+		{"-15;", "-", 15},
+	};
+
+	int len = sizeof(test_cases) / sizeof(test_cases[0]);
+
+	for (int i = 0; i < len; i++) {
+		CLexer lexer(test_cases[i].input);
+		CParser parser(lexer);
+		std::unique_ptr<Program> program = parser.parseProgram();
+		checkParserErrors(parser);
+
+		if (program->getStatementsSize() != 1) {
+			std::cout << "program.Statements does not contain 1 statement. got=" << program->getStatementsSize() << std::endl;
+			return;
+		}
+
+		auto stmt = dynamic_cast<const ExpressionStatement*>(program->getStatement(0));
+		if (stmt == nullptr) {
+			std::cout << "program.Statements[0] is not ExpressionStatement. got=" << typeid(program->getStatement(0)).name() << std::endl;
+			return;
+		}
+		auto expr = stmt->getExpression();
+		auto prefix_expr = dynamic_cast<const PrefixExpression*>(expr);
+
+		if (prefix_expr == nullptr) {
+			std::cout << "stmt.Expression is not PrefixExpression. got=" << typeid(stmt->getExpression()).name() << std::endl;
+			return;
+		}
+
+		if (prefix_expr->getOperator() != test_cases[i].expected_operator) {
+			std::cout << "prefix_expr.Operator not " << test_cases[i].expected_operator << ". got=" << prefix_expr->getOperator() << std::endl;
+			return;
+		}
+
+		if (!testIntegerLiteral(prefix_expr->getRight(), test_cases[i].expected_value)) {
+			return;
+		}
+	}
+
+	std::cout << "TestParsingPrefixExpression passed!" << std::endl;
+}
+
+void TestParsingInfixExpressions()
+{
+	struct test_case {
+		std::string input;
+		int64_t left_value;
+		std::string op;
+		int64_t right_value;
+	};
+
+	test_case infixTest[] = {
+		{"5+5;",5,"+",5},
+		{"5-5;",5,"-",5},
+		{"5*5;",5,"*",5},
+		{"5/5;",5,"/",5},
+		{"5>5;",5,">",5},
+		{"5<5;",5,"<",5},
+		{"5==5;",5,"==",5},
+		{"5!=5;",5,"!=",5},
+	};
+
+	int len = sizeof(infixTest) / sizeof(infixTest[0]);
+
+	for (int i = 0; i < len; i++)
+	{
+		CLexer lexer(infixTest[i].input);
+		CParser parser(lexer);
+		std::unique_ptr<Program> program = parser.parseProgram();
+		checkParserErrors(parser);
+
+		if (program->getStatementsSize() != 1) {
+			std::cout << "program.Statements does not contain 1 statements. got = " << program->getStatementsSize() << std::endl;
+			return;
+		}
+
+		auto stmt = dynamic_cast<const ExpressionStatement*>(program->getStatement(0));
+
+		if (stmt == nullptr) {
+			std::cout << "program.Statements[0] is not ast.ExpressionStatement. got = " << typeid(stmt).name() << std::endl;
+			return;
+		}
+
+		auto expr = dynamic_cast<const InfixExpression*>(stmt->getExpression());
+
+		if (expr == nullptr) {
+			std::cout << "exp is not ast.InfixExpression. got " << typeid(expr).name() << std::endl;
+			return;
+		}
+
+		if (expr->getOperator() != infixTest[i].op) {
+			std::cout << "exp.Operator is not " << infixTest[i].op << ". got = " << expr->getOperator() << std::endl;
+			return;
+		}
+		if (!testIntegerLiteral(expr->getRight(), infixTest[i].right_value)) {
+			return;
+		}
+	}
+
+	std::cout << "TestParsingInfixExpressions passed!" << std::endl;
+}
+
 void checkParserErrors(CParser& parser)
 {
 	const std::vector<std::string>& errors = parser.Errors();
