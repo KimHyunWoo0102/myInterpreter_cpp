@@ -211,14 +211,14 @@ void lexerTestVer3() {
 void TestLetStatement()
 {
 	const std::string input=
-		"let x  5;"
-		"let  = 10;"
-		"let 838383;";
+		"let x = 5;"
+		"let y = 10;"
+		"let foobar = 838383;";
 
 	CLexer lexer(input);
 	CParser parser(lexer);
 
-	std::unique_ptr<Program> program = parser.parseProgram();
+	std::shared_ptr<Program> program = parser.parseProgram();
 	checkParserErrors(parser);
 	if (program == nullptr) {
 		std::cout << "ParseProgram() returned nullptr" << std::endl;
@@ -272,7 +272,7 @@ void TestReturnStatement()
 		"return 993322;";
 	CLexer lexer(input);
 	CParser parser(lexer);
-	std::unique_ptr<Program> program = parser.parseProgram();
+	std::shared_ptr<Program> program = parser.parseProgram();
 	checkParserErrors(parser);
 
 	if (program->getStatementsSize() != 3) {
@@ -322,7 +322,7 @@ void TestIdentifierExpression() {
 	const std::string input = "foobar;";
 	CLexer lexer(input);
 	CParser parser(lexer);
-	std::unique_ptr<Program> program = parser.parseProgram();
+	std::shared_ptr<Program> program = parser.parseProgram();
 	checkParserErrors(parser);
 
 	if (program->getStatementsSize() != 1) {
@@ -361,7 +361,7 @@ void TestIntegerLiteralExpression()
 
 	CLexer lexer(input);
 	CParser parser(lexer);
-	std::unique_ptr<Program> program = parser.parseProgram();
+	std::shared_ptr<Program> program = parser.parseProgram();
 	checkParserErrors(parser);
 
 	if (program->getStatementsSize() != 1) {
@@ -430,7 +430,7 @@ void TestParsingPrefixExpression() {
 	for (int i = 0; i < len; i++) {
 		CLexer lexer(test_cases[i].input);
 		CParser parser(lexer);
-		std::unique_ptr<Program> program = parser.parseProgram();
+		std::shared_ptr<Program> program = parser.parseProgram();
 		checkParserErrors(parser);
 
 		if (program->getStatementsSize() != 1) {
@@ -490,7 +490,7 @@ void TestParsingInfixExpressions()
 	{
 		CLexer lexer(infixTest[i].input);
 		CParser parser(lexer);
-		std::unique_ptr<Program> program = parser.parseProgram();
+		std::shared_ptr<Program> program = parser.parseProgram();
 		checkParserErrors(parser);
 
 		if (program->getStatementsSize() != 1) {

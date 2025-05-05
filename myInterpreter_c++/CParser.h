@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include<map>
 
 #include "Token.h"
 #include "CLexer.h"
@@ -20,8 +21,8 @@
 
 */
 
-using prefixParseFn = std::function<std::unique_ptr<Expression>()>;
-using infixParseFn = std::function<std::unique_ptr<Expression>(std::unique_ptr<Expression>)>;
+using prefixParseFn = std::function<std::shared_ptr<Expression>()>;
+using infixParseFn = std::function<std::shared_ptr<Expression>(std::shared_ptr<Expression>)>;
 
 class CParser
 {
@@ -40,15 +41,16 @@ public:
 	};
 
 	void nextToken();
-	std::unique_ptr<Program> parseProgram();
-	std::unique_ptr<Statement> parseStatement();
-	std::unique_ptr<LetStatement> parseLetProgram();
-	std::unique_ptr<ReturnStatement> parseReturnStatement();
-	std::unique_ptr<ExpressionStatement> parseExpressionStatement();
-	std::unique_ptr<Expression> parseIdentifier();
-	std::unique_ptr<Expression> parseExpression(CParser::Precedence precedence);
-	std::unique_ptr<Expression> parseIntegerLiteral();
-	std::unique_ptr<Expression> parsePrefixExpression();
+	std::shared_ptr<Program> parseProgram();
+	std::shared_ptr<Statement> parseStatement();
+	std::shared_ptr<LetStatement> parseLetProgram();
+	std::shared_ptr<ReturnStatement> parseReturnStatement();
+	std::shared_ptr<ExpressionStatement> parseExpressionStatement();
+	std::shared_ptr<Expression> parseIdentifier();
+	std::shared_ptr<Expression> parseExpression(CParser::Precedence precedence);
+	std::shared_ptr<Expression> parseIntegerLiteral();
+	std::shared_ptr<Expression> parsePrefixExpression();
+	std::shared_ptr<Expression> parseInfixExpression(std::shared_ptr<Expression> left);
 
 	void noPrefixParseFnError(const TokenType &token);
 	bool curTokenIs(const TokenType& type) const {
@@ -64,6 +66,8 @@ public:
 		const std::string msg = "expected next token to be " + type + ", got " + this->_peek_token._type + " instead";
 		this->errors.push_back(msg);
 	}
+	const Precedence peekPrecedence() const;
+	const Precedence curPrecedence() const;
 
 	void registerPrefix(const TokenType& type, prefixParseFn fn) {
 		_prefix_parse_fns[type] = fn;
@@ -79,5 +83,5 @@ private:
 
 	std::map<TokenType, prefixParseFn>_prefix_parse_fns;
 	std::map<TokenType, infixParseFn>_infix_parse_fns;
+	std::map<TokenType, Precedence> precedences;
 };
-

@@ -6,9 +6,9 @@ int main() {
 	std::cout << "Feel Free to type in commands" << std::endl;
 	CRepl repl;
 	repl.Start(std::cout, std::cin);*/
-
+	//lexerTestVer3();
 	//TestLetStatement();
-	//TestReturnStatement();
+	TestReturnStatement();
 	//TestAstString();
 	//TestIdentifierExpression();
 	//TestIntegerLiteralExpression();
