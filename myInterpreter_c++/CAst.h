@@ -7,6 +7,8 @@
 
 // Token을 정의한 헤더
 #include "Token.h"
+#include <optional>
+class BlockStatement;//전방선언
 // Node 인터페이스
 class Node {
 public:
@@ -91,6 +93,62 @@ private:
 	std::string _value;
 };
 
+class FunctionLiteral : public Expression {
+public:
+	// 기본 생성자
+	FunctionLiteral() = default;
+	FunctionLiteral(Token token) :Expression(token) {}
+	// 파라미터와 바디를 받는 생성자
+	FunctionLiteral(const std::vector<std::shared_ptr<Identifier>>& parameters,
+		const std::shared_ptr<BlockStatement>& body)
+		: _parameters(parameters), _body(body) {
+	}
+
+	virtual ~FunctionLiteral() = default;
+
+	// 문자열로 출력 (구현 필요)
+	virtual std::string String() const override;
+
+	virtual std::string getExpressionNode() override { return "FunctionLiteral"; }
+
+	// Getter for parameters
+	const std::vector<std::shared_ptr<Identifier>>& getParameters() const {
+		return _parameters;
+	}
+
+	// Setter for parameters
+	void setParameters(std::optional<std::vector<std::shared_ptr<Identifier>>> parameters)
+	{
+		if (parameters) {
+			// 값이 있을 경우에만 set
+			this->_parameters = *parameters;
+		}
+		else {
+			// 파라미터가 없을 경우 처리 로직 (필요한 경우)
+			this->_parameters.clear();
+		}
+	}
+
+	// Add one parameter
+	void addParameter(const std::shared_ptr<Identifier>& param) {
+		_parameters.push_back(param);
+	}
+
+	// Getter for body
+	const std::shared_ptr<BlockStatement>& getBody() const {
+		return _body;
+	}
+
+	// Setter for body
+	void setBody(const std::shared_ptr<BlockStatement>& body) {
+		_body = body;
+	}
+
+private:
+	std::vector<std::shared_ptr<Identifier>> _parameters;
+	std::shared_ptr<BlockStatement> _body;
+};
+
 class IntegerLiteral : public Expression {
 public:
 	IntegerLiteral() = default;
@@ -123,7 +181,7 @@ public:
 	PrefixExpression(Token token, std::string& op)
 		:Expression(token), _operator(op) {
 	}
-	~PrefixExpression() = default;
+	virtual ~PrefixExpression() = default;
 
 	const std::string& getOperator() const { return _operator; }
 	const Expression* getRight() const { return _right.get(); }
@@ -149,7 +207,7 @@ public:
 	InfixExpression(Token token, std::string& op, std::shared_ptr<Expression> left)
 		:Expression(token), _operator(op), _left(std::move(left)) {
 	}
-	~InfixExpression() = default;
+	virtual ~InfixExpression() = default;
 
 	const std::string& getOperator()const { return _operator; }
 	const Expression* getLeft()const { return _left.get(); }
@@ -167,6 +225,54 @@ private:
 	std::shared_ptr<Expression> _right;
 };
 
+class Boolean :public Expression {
+public:
+	Boolean() = default;
+	Boolean(Token token):Expression(token){}
+	Boolean(Token token,bool value):Expression(token),_value(value){}
+	virtual ~Boolean() = default;
+
+	const bool getValue()const { return _value; }
+	virtual std::string getExpressionNode()override { return "PrefixExpression"; }
+	virtual std::string String() const override { return this->_token._literal; }
+
+private:
+	bool _value;
+};
+
+
+class IfExpression :public Expression {
+public:
+	IfExpression() = default;
+	IfExpression(Token token):Expression(token){}
+	IfExpression(Token token, std::shared_ptr<BlockStatement> consequence, std::shared_ptr< BlockStatement> alternative)
+		:Expression(token), _consequence(consequence), _alternative(alternative) {}
+	virtual ~IfExpression() = default;
+
+	const BlockStatement* getConsequence()const { return _consequence.get(); }
+	const BlockStatement* getAlternative()const { return _alternative.get(); }
+	const Expression* getCondition()const { return _condition.get(); }
+
+	void setCondition(std::shared_ptr<Expression> condition) {
+		_condition = std::move(condition);
+	}
+
+	void setConsequence(std::shared_ptr<BlockStatement> consequence) {
+		_consequence = std::move(consequence);
+	}
+
+	void setAlternative(std::shared_ptr<BlockStatement> alternative) {
+		_alternative = std::move(alternative);
+	}
+
+	virtual std::string getExpressionNode()override { return "IfExpression"; }
+	virtual std::string String() const override;
+
+private:
+	std::shared_ptr<Expression> _condition;
+	std::shared_ptr<BlockStatement> _consequence;
+	std::shared_ptr< BlockStatement> _alternative;
+};
 // LetStatement 클래스
 class LetStatement : public Statement {
 public:
@@ -225,4 +331,25 @@ public:
 	}
 private:
 	std::shared_ptr<Expression> _expression;
+};
+
+class BlockStatement : public Statement {
+public:
+	BlockStatement() = default;
+
+	BlockStatement(const Token& token) :Statement(token) {}
+
+	virtual ~BlockStatement() = default;
+
+	std::string String() const override;
+	virtual std::string getStatementNode() override { return "BlockStatement"; }
+
+	const std::vector<std::shared_ptr<Statement>>& getStatements() const { return _statements; }
+	const size_t getStatementsSize()const { return _statements.size(); }
+	void addStatement(std::shared_ptr<Statement> stmt) {
+		_statements.push_back(std::move(stmt));
+	}
+
+private:
+	std::vector<std::shared_ptr<Statement>> _statements;
 };

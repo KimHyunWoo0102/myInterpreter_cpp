@@ -1,6 +1,8 @@
 #include "CParser.h"
 #include "CAst.h"
 #include "CLexer.h"
+#include "CTracer.h"
+#include <optional>
 
 
 
@@ -23,12 +25,15 @@ CParser::CParser(CLexer& lexer)
 	{ ASTERISK,Precedence::PRODUCT }
 	};
 	// Prefix 파싱 함수 등록 (IDENT와 INT 타입에 대해)
-	this->registerPrefix(IDENT, std::bind(&CParser::parseIdentifier, this));
-	this->registerPrefix(INT, std::bind(&CParser::parseIntegerLiteral, this));
-
-	this->registerPrefix(BANG, std::bind(&CParser::parsePrefixExpression, this));
-	this->registerPrefix(MINUS, std::bind(&CParser::parsePrefixExpression, this));
-
+	this->registerPrefix(IDENT, [this]() { return this->parseIdentifier(); });
+	this->registerPrefix(INT, [this]() { return this->parseIntegerLiteral(); });
+	this->registerPrefix(BANG, [this]() { return this->parsePrefixExpression(); });
+	this->registerPrefix(MINUS, [this]() { return this->parsePrefixExpression(); });
+	this->registerPrefix(TRUE, [this]() { return this->parseBoolean(); });
+	this->registerPrefix(FALSE, [this]() { return this->parseBoolean(); });
+	this->registerPrefix(LPAREN, [this]() { return this->parseGroupedExpression(); });
+	this->registerPrefix(IF, [this]() { return this->parseIfExpression(); });
+	this->registerPrefix(FUNCTION, [this]() {return this->parseFunctionLiteral(); });
 	//inFix 파싱
 
 	this->registerInfix(PLUS, [this](std::shared_ptr<Expression> left) { return this->parseInfixExpression(std::move(left)); });
@@ -113,6 +118,7 @@ std::shared_ptr<ReturnStatement> CParser::parseReturnStatement() // return type�
 // 표현식 문법을 파싱하는 함수
 std::shared_ptr<ExpressionStatement> CParser::parseExpressionStatement() // return type을 shared_ptr로 변경
 {
+	
 	std::shared_ptr<ExpressionStatement> expr_stmt = std::make_shared<ExpressionStatement>(this->_cur_token);  // ExpressionStatement 생성
 	expr_stmt->setExpression(this->parseExpression(Precedence::LOWEST));  // 표현식 파싱
 
@@ -187,6 +193,11 @@ std::shared_ptr<Expression> CParser::parseIntegerLiteral() // return type을 shar
 	return lit;  // 생성된 IntegerLiteral 반환
 }
 
+std::shared_ptr<Expression> CParser::parseBoolean()
+{
+	return std::make_shared<Boolean>(this->_cur_token,this->curTokenIs(TRUE));
+}
+
 std::shared_ptr<Expression> CParser::parsePrefixExpression() // return type을 shared_ptr로 변경
 {
 	std::shared_ptr<PrefixExpression> expression = std::make_shared<PrefixExpression>(this->_cur_token, this->_cur_token._literal);
@@ -206,6 +217,103 @@ std::shared_ptr<Expression> CParser::parseInfixExpression(std::shared_ptr<Expres
 
 	return expression;
 }
+
+std::shared_ptr<Expression> CParser::parseGroupedExpression()
+{
+	this->nextToken();
+
+	auto exp = this->parseExpression(Precedence::LOWEST);
+
+	if (!this->expectPeek(RPAREN))
+		return nullptr;
+
+	return exp;
+}
+
+std::shared_ptr<Expression> CParser::parseIfExpression()
+{
+	auto expression = std::make_shared<IfExpression>(this->_cur_token);
+
+	if (!this->expectPeek(LPAREN))
+		return nullptr;
+
+	this->nextToken();
+	expression->setCondition(this->parseExpression(Precedence::LOWEST));
+
+	if (!this->expectPeek(RPAREN))
+		return nullptr;
+	if (!this->expectPeek(LBRACE))
+		return nullptr;
+	expression->setConsequence(this->parseBlockStatement());
+
+	if (this->peekTokenIs(ELSE)) {
+		this->nextToken();
+		if (!this->expectPeek(LBRACE))
+			return nullptr;
+
+		expression->setAlternative(this->parseBlockStatement());
+	}
+	return expression;
+}
+
+std::shared_ptr<BlockStatement> CParser::parseBlockStatement()
+{
+	auto block = std::make_shared<BlockStatement>(this->_cur_token);
+	this->nextToken();
+
+	while (!this->curTokenIs(RBRACE) && !this->curTokenIs(EOF_TOKEN)) {
+		auto stmt = this->parseStatement();
+		if (stmt != nullptr) {
+			block->addStatement(stmt);
+		}
+		this->nextToken();
+	}
+	return block;
+}
+
+std::shared_ptr<FunctionLiteral> CParser::parseFunctionLiteral()
+{
+	auto lit = std::make_shared<FunctionLiteral>(this->_cur_token);
+
+	if (!this->expectPeek(LPAREN))
+		return nullptr;
+
+	lit->setParameters(this->parseFunctionParameters());
+	if (!this->expectPeek(LBRACE))
+		return nullptr;
+
+	lit->setBody(this->parseBlockStatement());
+	return lit;
+}
+
+std::optional<std::vector<std::shared_ptr<Identifier>>> CParser::parseFunctionParameters()
+{
+	std::vector<std::shared_ptr<Identifier>> identifiers;
+
+	if (this->peekTokenIs(RPAREN)) {
+		return std::nullopt;  // 파라미터가 없을 경우 std::nullopt 반환
+	}
+
+	this->nextToken(); // '('를 넘김
+
+	// 첫 번째 파라미터 추가
+	auto ident = std::make_shared<Identifier>(this->_cur_token, this->_cur_token._literal);
+	identifiers.push_back(ident);
+
+	while (this->peekTokenIs(COMMA)) {
+		this->nextToken(); // ',' 넘김
+		this->nextToken(); // 파라미터 이름 받음
+		ident = std::make_shared<Identifier>(this->_cur_token, this->_cur_token._literal);
+		identifiers.push_back(ident);
+	}
+
+	if (!this->expectPeek(RPAREN)) {
+		return std::nullopt;  // RPAREN을 못받았으면 파싱 실패
+	}
+
+	return identifiers;  // 파라미터가 정상적으로 파싱되었으면 반환
+}
+
 
 void CParser::noPrefixParseFnError(const TokenType& type)
 {

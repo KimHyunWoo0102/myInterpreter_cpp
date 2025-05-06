@@ -49,8 +49,15 @@ public:
 	std::shared_ptr<Expression> parseIdentifier();
 	std::shared_ptr<Expression> parseExpression(CParser::Precedence precedence);
 	std::shared_ptr<Expression> parseIntegerLiteral();
+	std::shared_ptr<Expression> parseBoolean();
 	std::shared_ptr<Expression> parsePrefixExpression();
 	std::shared_ptr<Expression> parseInfixExpression(std::shared_ptr<Expression> left);
+	std::shared_ptr<Expression> parseGroupedExpression();
+	std::shared_ptr<Expression> parseIfExpression();
+	std::shared_ptr<BlockStatement> parseBlockStatement();
+	std::shared_ptr<FunctionLiteral> parseFunctionLiteral();
+
+	std::optional<std::vector<std::shared_ptr<Identifier>>> parseFunctionParameters();
 
 	void noPrefixParseFnError(const TokenType &token);
 	bool curTokenIs(const TokenType& type) const {

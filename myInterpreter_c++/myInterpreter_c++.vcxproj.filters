@@ -9,6 +9,9 @@
     <ClInclude Include="test.h">
       <Filter>testing</Filter>
     </ClInclude>
+    <ClInclude Include="CTracer.h">
+      <Filter>testing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp" />
@@ -20,6 +23,9 @@
     <ClCompile Include="CRepl.cpp" />
     <ClCompile Include="CParser.cpp" />
     <ClCompile Include="CAst.cpp" />
+    <ClCompile Include="CTracer.cpp">
+      <Filter>testing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="testing">
