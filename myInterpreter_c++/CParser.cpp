@@ -22,7 +22,8 @@ CParser::CParser(CLexer& lexer)
 	{ PLUS,Precedence::SUM },
 	{ MINUS,Precedence::SUM },
 	{ SLASH,Precedence::PRODUCT },
-	{ ASTERISK,Precedence::PRODUCT }
+	{ ASTERISK,Precedence::PRODUCT },
+	{LPAREN,Precedence::CALL},
 	};
 	// Prefix 파싱 함수 등록 (IDENT와 INT 타입에 대해)
 	this->registerPrefix(IDENT, [this]() { return this->parseIdentifier(); });
@@ -36,6 +37,7 @@ CParser::CParser(CLexer& lexer)
 	this->registerPrefix(FUNCTION, [this]() {return this->parseFunctionLiteral(); });
 	//inFix 파싱
 
+	this->registerInfix(LPAREN, [this](std::shared_ptr<Expression>left) {return this->parseCallExpression(std::move(left)); });
 	this->registerInfix(PLUS, [this](std::shared_ptr<Expression> left) { return this->parseInfixExpression(std::move(left)); });
 	this->registerInfix(MINUS, [this](std::shared_ptr<Expression> left) { return this->parseInfixExpression(std::move(left)); });
 	this->registerInfix(SLASH, [this](std::shared_ptr<Expression> left) { return this->parseInfixExpression(std::move(left)); });
@@ -95,6 +97,10 @@ std::shared_ptr<LetStatement> CParser::parseLetProgram() // return type을 shared
 	if (!this->expectPeek(ASSIGN))
 		return nullptr;
 
+	this->nextToken();
+
+	let_stmt->setValue(this->parseExpression(Precedence::LOWEST));
+
 	// 세미콜론(;)을 확인, 없으면 건너뛰기
 	if (!this->expectPeek(SEMICOLON))
 		this->nextToken();  // 세미콜론 나올 때까지 건너뜀
@@ -108,6 +114,7 @@ std::shared_ptr<ReturnStatement> CParser::parseReturnStatement() // return type�
 	std::shared_ptr<ReturnStatement> return_stmt = std::make_shared<ReturnStatement>(this->_cur_token);  // ReturnStatement 생성
 	this->nextToken();  // 다음 토큰으로 이동
 
+	return_stmt->setReturnValue(this->parseExpression(Precedence::LOWEST));
 	// 세미콜론을 만날 때까지 이동
 	while (!this->curTokenIs(SEMICOLON))
 		this->nextToken();
@@ -286,11 +293,43 @@ std::shared_ptr<FunctionLiteral> CParser::parseFunctionLiteral()
 	return lit;
 }
 
+std::shared_ptr<Expression> CParser::parseCallExpression(std::shared_ptr<Expression> function)
+{
+	std::shared_ptr<CallExpression> exp=make_shared<CallExpression>(this->_cur_token, function);
+	exp->setArguments(*this->parseCallArguments());
+
+	return exp;
+}
+
+std::optional<std::vector<std::shared_ptr<Expression>>> CParser::parseCallArguments()
+{
+	std::vector<std::shared_ptr<Expression>>args;
+
+	if (this->peekTokenIs(RPAREN)) {
+		this->nextToken();
+		return args;
+	}
+
+	this->nextToken();
+	args.push_back(this->parseExpression(Precedence::LOWEST));
+
+	while (this->peekTokenIs(COMMA)) {
+		this->nextToken();
+		this->nextToken();
+		args.push_back(this->parseExpression(Precedence::LOWEST));
+	}
+
+	if (!this->expectPeek(RPAREN))
+		return std::nullopt;
+	return args;
+}
+
 std::optional<std::vector<std::shared_ptr<Identifier>>> CParser::parseFunctionParameters()
 {
 	std::vector<std::shared_ptr<Identifier>> identifiers;
 
 	if (this->peekTokenIs(RPAREN)) {
+		this->nextToken();
 		return std::nullopt;  // 파라미터가 없을 경우 std::nullopt 반환
 	}
 

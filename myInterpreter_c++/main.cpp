@@ -43,7 +43,10 @@ int main() {
 
       //estIfExpression();
     //TestIfElseExpression();
-    TestFunctionLiteralParsing();
-    TestFunctionParameterParsing();
+   // TestFunctionLiteralParsing();
+     //TestFunctionParameterParsing();
+    CRepl repl;
+    repl.Start(std::cout, std::cin); 
+    
 	return 0;
 }

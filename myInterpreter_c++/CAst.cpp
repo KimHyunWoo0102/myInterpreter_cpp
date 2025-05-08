@@ -126,3 +126,16 @@ std::string FunctionLiteral::String() const
 
 	return out;
 }
+
+std::string CallExpression::String() const
+{
+	std::string out;
+	std::vector<std::string>args;
+
+	for (auto& a : this->_arguments) {
+		args.push_back(a->String());
+	}
+
+	out += this->_function->String() + "(" + join(args, ", ") + ")";
+	return out;
+}

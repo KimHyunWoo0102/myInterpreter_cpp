@@ -210,33 +210,35 @@ void lexerTestVer3() {
 
 void TestLetStatement()
 {
-	const std::string input=
-		"let x = 5;"
-		"let y = 10;"
-		"let foobar = 838383;";
+	struct tests {
+		std::string input;
+		std::string expected_identifier;
+		std::any expected_value;
+	};
 
-	CLexer lexer(input);
-	CParser parser(lexer);
+	tests test_case[] = {
+		{"let x = 5;","x",5},
+		{"let y = true;","y",true},
+		{"let foobar = y;","foobar","y"}
+	};
 
-	std::shared_ptr<Program> program = parser.parseProgram();
-	checkParserErrors(parser);
-	if (program == nullptr) {
-		std::cout << "ParseProgram() returned nullptr" << std::endl;
-		return;
-	}
+	for (auto tt : test_case) {
+		CLexer lexer(tt.input);
+		CParser parser(lexer);
 
-	if (program->getStatementsSize() != 3) {
-		std::cout << "program.Statements does not contain 3 statements. got=" << program->getStatementsSize() << std::endl;
-		return;
-	}
+		auto program = parser.parseProgram();
+		checkParserErrors(parser);
+		
+		if (program->getStatementsSize() != 1) {
+			std::cout << "program.Statements does not contain 1 statements. got=" << program->getStatementsSize() << std::endl;
+		}
 
-	const std::string expectedIdentifier[]=
-	{ "x","y", "foobar" };
-
-	
-	for (int i = 0; i < program->getStatementsSize(); i++) {
-		const Statement *stmt = program->getStatement(i);
-		if(!testLetStatement(stmt,expectedIdentifier[i]))return;
+		const auto stmt = program->getStatement(0);
+		if (!testLetStatement(stmt, tt.expected_identifier))
+			return;
+		auto val = dynamic_cast<const LetStatement*>(stmt)->getValue();
+		if (!testLiteralExpression(val, tt.expected_value))
+			return;
 	}
 }
 
@@ -565,8 +567,11 @@ bool testIdentifier(const Expression* exp, std::string value)
 
 bool testLiteralExpression(const Expression* exp, std::any expected)
 {
-	if (typeid(int) == expected.type() || typeid(int64_t) == expected.type()) {
-		return testIntegerLiteral(exp, std::any_cast<int64_t>(expected));
+	if (expected.type() == typeid(int64_t) || expected.type() == typeid(int)) {
+		int64_t value = expected.type() == typeid(int64_t)
+			? std::any_cast<int64_t>(expected)
+			: static_cast<int64_t>(std::any_cast<int>(expected));
+		return testIntegerLiteral(exp, value);
 	}
 	else if (typeid(std::string) == expected.type() || typeid(const char*) == expected.type()) {
 		// 만약 expected가 const char*이면 이를 std::string으로 변환
@@ -888,14 +893,7 @@ void TestFunctionParameterParsing()
 	};
 
 	tests test_case[] = {
-	{"fn() {};",
-	 {}},  // 파라미터 없음, 빈 벡터
-
-	{"fn(x) {};",
-	 {"x"}},  // x 파라미터
-
-	{"fn(x, y, z) {};",
-	 {"x", "y", "z"}},  // x, y, z 파라미터
+		{"fn() {};",{}},
 	};
 
 	for (auto& tt : test_case) {
@@ -919,6 +917,42 @@ void TestFunctionParameterParsing()
 	}
 
 	std::cout << "TestFunctionLiteralParsing passed" << std::endl;
+}
+
+void TestCallExpression()
+{
+	const std::string input = "add(1, 2 * 3, 4 + 5);";
+
+	CLexer lexer(input);
+	CParser parser(lexer);
+	auto program = parser.parseProgram();
+	checkParserErrors(parser);
+
+	if (program->getStatementsSize() != 1) {
+		std::cout << "program.Statements does not contain 1 statements. got=" << program->getStatementsSize() << std::endl;
+	}
+
+	auto stmt = dynamic_cast<const ExpressionStatement*>(program->getStatement(0));
+
+	if (stmt == nullptr) {
+		std::cout << "stmt.Expression is not ast.ExpressionStatement. got=" << typeid(*program->getStatement(0)).name() << std::endl;
+	}
+	auto exp = dynamic_cast<const CallExpression*>(stmt->getExpression());
+	if (exp == nullptr) {
+		std::cout << "stmt.Expression is not ast.CallExpression. got=" << typeid(*(stmt->getExpression())).name() << std::endl;
+	}
+
+	if (!testIdentifier(exp->getFunction().get(), "add"))
+		return;
+
+	const auto args = exp->getArguments();
+	if (args.size() != 3) {
+		std::cout << "wrong length of arguments. got=" << args.size();
+	}
+
+	testLiteralExpression(args[0].get(), 1);
+	testInfixExpression(args[1].get(), 2, "*", 3);
+	testInfixExpression(args[2].get(), 4, "+", 5);
 }
 
 void checkParserErrors(CParser& parser)

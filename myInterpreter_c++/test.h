@@ -31,4 +31,6 @@ void TestOperatorPrecedenceParsing();
 void TestBooleanExpression();
 void TestFunctionLiteralParsing();
 void TestFunctionParameterParsing();
+void TestCallExpression();
+
 void checkParserErrors(CParser& parser);

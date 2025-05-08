@@ -56,6 +56,8 @@ public:
 	std::shared_ptr<Expression> parseIfExpression();
 	std::shared_ptr<BlockStatement> parseBlockStatement();
 	std::shared_ptr<FunctionLiteral> parseFunctionLiteral();
+	std::shared_ptr<Expression>parseCallExpression(std::shared_ptr<Expression> function);
+	std::optional<std::vector<std::shared_ptr<Expression>>>parseCallArguments();
 
 	std::optional<std::vector<std::shared_ptr<Identifier>>> parseFunctionParameters();
 

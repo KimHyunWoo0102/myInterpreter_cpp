@@ -273,6 +273,45 @@ private:
 	std::shared_ptr<BlockStatement> _consequence;
 	std::shared_ptr< BlockStatement> _alternative;
 };
+
+class CallExpression : public Expression {
+public:
+	CallExpression() = default;
+	CallExpression(Token token) : Expression(token) {}
+	CallExpression(Token token,std::shared_ptr<Expression> function):Expression(token),_function(function){}
+
+	~CallExpression() = default;
+
+	virtual std::string getExpressionNode() override { return "CallExpression"; }
+	virtual std::string String() const override;
+
+	// Getter and Setter for _function
+	std::shared_ptr<Expression> getFunction() const {
+		return _function;
+	}
+
+	void setFunction(std::shared_ptr<Expression> function) {
+		_function = function;
+	}
+
+	// Getter and Setter for _arguments
+	std::vector<std::shared_ptr<Expression>> getArguments() const {
+		return _arguments;
+	}
+
+	void setArguments(const std::vector<std::shared_ptr<Expression>>& arguments) {
+		_arguments = arguments;
+	}
+
+	void addArgument(std::shared_ptr<Expression> argument) {
+		_arguments.push_back(argument);
+	}
+
+private:
+	std::shared_ptr<Expression> _function;
+	std::vector<std::shared_ptr<Expression>> _arguments;
+};
+
 // LetStatement 클래스
 class LetStatement : public Statement {
 public:
