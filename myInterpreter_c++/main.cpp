@@ -1,6 +1,7 @@
 ﻿#include "CRepl.h"
 #include"test.h"
 #include "CAst.h"
+#include "evaluator_test.h"
 
 void runTestInfixExpression() {
     // Token 생성
@@ -18,35 +19,19 @@ void runTestInfixExpression() {
     // ExpressionStatement로 감싸기
     auto stmt = std::make_shared<ExpressionStatement>(tok);
     stmt->setExpression(infix);
-
+      
     // 테스트 실행
     bool success = testInfixExpression(stmt->getExpression(), int64_t(5), "+", int64_t(10));
     std::cout << (success ? "Test passed" : "❌ Test failed") << std::endl;
 }
+
 int main() {
-	/*std::cout << "Hello! This is the Monkey Programming Language!" << std::endl;
-	std::cout << "Feel Free to type in commands" << std::endl;
-	CRepl repl;
-	repl.Start(std::cout, std::cin);*/
-	//lexerTestVer3();
-	//TestLetStatement();
-	//TestReturnStatement();
-	//TestAstString();
-	//TestIdentifierExpression();
-	//TestIntegerLiteralExpression();
+//    TestIfElseExpressions();
+    //TestEvalIntegerExpression();
+    TestErrorHandling();
+    std::cout << "passed";
+    //CRepl repl;
+    //repl.Start(std::cout, std::cin); 
 
-	//TestParsingPrefixExpression();
-	//TestParsingInfixExpressions();
-	//TestOperatorPrecedenceParsing();
-    //runTestInfixExpression();
-   // TestBooleanExpression();
-
-      //estIfExpression();
-    //TestIfElseExpression();
-   // TestFunctionLiteralParsing();
-     //TestFunctionParameterParsing();
-    CRepl repl;
-    repl.Start(std::cout, std::cin); 
-    
 	return 0;
 }

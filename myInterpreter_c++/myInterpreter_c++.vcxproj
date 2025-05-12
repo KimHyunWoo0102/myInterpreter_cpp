@@ -130,18 +130,24 @@
   <ItemGroup>
     <ClInclude Include="CAst.h" />
     <ClInclude Include="CLexer.h" />
+    <ClInclude Include="CObject.h" />
     <ClInclude Include="CParser.h" />
     <ClInclude Include="CRepl.h" />
     <ClInclude Include="CTracer.h" />
+    <ClInclude Include="Evaluator.h" />
+    <ClInclude Include="evaluator_test.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAst.cpp" />
     <ClCompile Include="CLexer.cpp" />
+    <ClCompile Include="CObject.cpp" />
     <ClCompile Include="CParser.cpp" />
     <ClCompile Include="CRepl.cpp" />
     <ClCompile Include="CTracer.cpp" />
+    <ClCompile Include="Evaluator.cpp" />
+    <ClCompile Include="evaluator_test.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Token.cpp" />

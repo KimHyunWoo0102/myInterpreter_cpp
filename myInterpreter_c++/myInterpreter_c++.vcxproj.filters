@@ -12,6 +12,11 @@
     <ClInclude Include="CTracer.h">
       <Filter>testing</Filter>
     </ClInclude>
+    <ClInclude Include="CObject.h" />
+    <ClInclude Include="evaluator_test.h">
+      <Filter>testing</Filter>
+    </ClInclude>
+    <ClInclude Include="Evaluator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp" />
@@ -26,6 +31,11 @@
     <ClCompile Include="CTracer.cpp">
       <Filter>testing</Filter>
     </ClCompile>
+    <ClCompile Include="CObject.cpp" />
+    <ClCompile Include="evaluator_test.cpp">
+      <Filter>testing</Filter>
+    </ClCompile>
+    <ClCompile Include="Evaluator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="testing">

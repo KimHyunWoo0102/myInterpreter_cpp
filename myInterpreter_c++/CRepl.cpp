@@ -1,6 +1,7 @@
 #include "CRepl.h"
 #include "CParser.h"
 #include <sstream>
+#include "Evaluator.h"
 
 void CRepl::Start(std::ostream& os, std::istream& is)
 {
@@ -10,7 +11,7 @@ void CRepl::Start(std::ostream& os, std::istream& is)
 	std::string line;
 
 	while (true) {
-		Print(os, PROMT);
+		os << PROMT;
 
 		if (!std::getline(is, line))
 			break;
@@ -25,22 +26,11 @@ void CRepl::Start(std::ostream& os, std::istream& is)
 			continue;
 		}
 
-		if (program != nullptr) {
-			os << program->String() << '\n';
+		const auto evaluated= eval(program.get());
+		if (evaluated != nullptr) {
+			os << evaluated->Inspect() + "\n";
 		}
 	}
-}
-
-std::ostream& CRepl::Print(std::ostream& os, const std::string& str)
-{
-	os << str;
-	return os;
-}
-
-std::ostream& CRepl::Print(std::ostream& os, const Token& tok)
-{
-	os << tok;
-	return os;
 }
 
 void CRepl::printParseErrors(std::ostream& os, const std::vector<std::string>& errors)

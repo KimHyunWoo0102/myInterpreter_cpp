@@ -54,6 +54,10 @@ public:
 		return _statements[index].get();
 	}
 
+	const std::vector<std::shared_ptr<Statement>>& getStatement()const {
+		return _statements;
+	}
+
 	void addStatement(std::shared_ptr<Statement> statement) {
 		_statements.push_back(std::move(statement));
 	}

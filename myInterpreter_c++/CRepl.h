@@ -11,9 +11,7 @@ public:
 	CRepl() = default;
 	~CRepl() = default;
 	void Start(std::ostream& os, std::istream& is);
-	std::ostream& Print(std::ostream& os, const std::string& str);
-	std::ostream& Print(std::ostream& os, const Token& tok);
-
+	
 	void printParseErrors(std::ostream& os, const std::vector<std::string>&errors);
 private:
 	const std::string PROMT = ">>";
