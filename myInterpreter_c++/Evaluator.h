@@ -11,6 +11,8 @@ extern const std::shared_ptr<CObject> FALSE_OBJ;
 extern const std::shared_ptr<CObject> NULL_OBJECT;
 
 bool isTruthy(const std::shared_ptr<CObject>& object);
+bool isError(const std::shared_ptr<CObject>& object);
+
 std::shared_ptr<CObject> eval(Node* node);
 std::shared_ptr<CObject> evalStatements(const std::vector<std::shared_ptr<Statement>>& stmts);
 

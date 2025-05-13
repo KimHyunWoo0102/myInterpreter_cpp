@@ -19,6 +19,13 @@ bool isTruthy(const std::shared_ptr<CObject>& object)
     return true; // Integer나 다른 객체는 truthy로 간주
 }
 
+bool isError(const std::shared_ptr<CObject>& object)
+{
+    if (object == nullptr)
+        return object->Type() == ERROR_OBJ;
+    return false;
+}
+
 
 std::shared_ptr<CObject> eval(Node* node)
 {
@@ -52,6 +59,8 @@ std::shared_ptr<CObject> eval(Node* node)
     else if (typeid(*node) == typeid(PrefixExpression)) {
         auto tmp = dynamic_cast<PrefixExpression*>(node);
         auto right = eval(const_cast<Expression*>(tmp->getRight()));
+        if (isError(right))
+            return right;
         return evalPrefixExpression(tmp->getOperator(), right);
     }
     else if (typeid(*node) == typeid(InfixExpression)) {
@@ -61,7 +70,14 @@ std::shared_ptr<CObject> eval(Node* node)
             return nullptr;
 
         auto left = eval(const_cast<Expression*>(tmp->getLeft()));
+        if (isError(left))
+            return left;
+
         auto right = eval(const_cast<Expression*>(tmp->getRight()));
+        
+        if (isError(right))
+            return right;
+
         return evalInfixExpression(tmp->getOperator(), left, right);
     }
     else if (typeid(*node) == typeid(BlockStatement)) {
@@ -75,6 +91,9 @@ std::shared_ptr<CObject> eval(Node* node)
     else if (typeid(*node) == typeid(ReturnStatement)) {
         auto tmp = dynamic_cast<ReturnStatement*>(node);
         auto val = eval(const_cast<Expression*>(tmp->getReturnValue()));
+
+        if (isError(val))
+            return val;
         return std::make_shared<ReturnValue>(val);
     }
     
@@ -191,6 +210,9 @@ const std::shared_ptr<CObject> evalIntegerInfixExpression(const std::string& op,
 const std::shared_ptr<CObject> evalIfExpression(const IfExpression* ie)
 {
     auto condition = eval(const_cast<Expression*>(ie->getCondition()));
+
+    if (isError(condition))
+        return condition;
 
     if (isTruthy(condition))
         return eval(const_cast<BlockStatement*>(ie->getConsequence()));
